@@ -1,0 +1,31 @@
+{
+    "chatbot_confrigations": {
+        "model": "glm-4",
+        "temprature": 0.4,
+        "text_speaker_identification" : "<Context> {context} </Context>识别并将以下文本分配给说话者1或说话者2。请按顺序提供文本，并为每位说话者清晰标记：1. 说话者1： 2. 说话者2：请勿生成任何其他内容或添加任何文字"
+    },
+
+    "audio_to_text_transcriber": {
+        "streaming_model":"paraformer-zh-streaming",
+        "streaming_model_revision": "v2.0.4",
+        "streaming_configrations": {"audio_data_processed_partition":[0, 20, 10], "encoder_chunk_look_back":4,"decoder_chunk_look_back": 1, "Samples_in_one_second": 1720,"stopwords":["嗯", "啊", "哦","哼"]},
+        "non_streaming_model":"paraformer-zh",
+        "non_streaming_audio_gathering_time": 30,
+        "kwargs": {"disable_update": true, "device": "cpu"},
+        "vad_model":"fsmn-vad",
+        "vad_kwargs":{"max_single_segment_time": 30000},
+        "punc_model":"ct-punc",
+        "spk_model":"cam++",
+        "spk_model_revision":"v2.0.2",
+        "Audio_transcription_files":"/BACKEND-ALGORITHM-LLM/Audio_transcription_files/",
+        "online_streaming_files":"/BACKEND-ALGORITHM-LLM/online_streaming_files/",
+        "online_correction_files":"/BACKEND-ALGORITHM-LLM/online_correction_files/",
+        "model_sampling_rate": 16000 
+    },
+
+    "database_information" : {
+        "client_uri": "mongodb://localhost:27017/",
+        "database_name": "Psycho_session",
+        "collection": "Information"
+    }
+}

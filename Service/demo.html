@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Audio Recorder and Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #000000;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden; /* Prevent scrolling of the entire page */
+        }
+
+        #appContainer {
+            background: #720505;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 1000px;
+            max-width: 90%;
+            height: 90vh; /* Adjust height to fit the screen */
+            max-height: 90vh; /* Set maximum height relative to the viewport */
+            overflow-y: auto; /* Enable scrolling if content exceeds the container */
+        }
+
+        h1, h2, h3 {
+            color: #f3f3f3;
+            text-align: center;
+        }
+
+        button {
+            background-color: #05192e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 5px 0;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        button:disabled {
+            background-color: #cac8c8;
+            cursor: not-allowed;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+
+        #messages, #chatMessages {
+            border: 1px solid #080000;
+            padding: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            white-space: pre-wrap; /* Preserve white spaces and line breaks */
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        #notification {
+            margin-top: 10px;
+            color: #000000;
+            font-weight: bold;
+            text-align: center;
+        }
+   
+        .messages {
+            background-color: #ffffff; /* White background */
+            color: #000000; /* Black text */
+            border: 1px solid #ccc; /* Light gray border */
+            padding: 10px; /* Padding around content */
+            margin-top: 10px; /* Space between the boxes */
+            max-height: 200px; /* Limit the height of the boxes */
+            overflow-y: auto; /* Add scroll if content exceeds height */
+        }
+        #streamingmessage {
+
+        }
+
+        #oldcorrectedmessage {
+        }
+
+        #newcorrectedmessage {
+
+        }
+        #finalcorrectedmessage{
+
+        }
+
+        #chatBox {
+            margin-top: 20px;
+        }
+
+        #subjectForm {
+            margin-top: 20px;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 8px;
+            margin-top: 10px;
+            border: 1px solid #220808;
+            border-radius: 5px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .dropdown-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        select {
+            width: calc(100% - 100px);
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        label {
+            color: white; /* White text */
+            font-weight: bold; /* Bold text */
+            display: block; /* Ensures labels are on separate lines */
+            margin-top: 10px; /* Adds space above each label */
+        }
+        body {
+            display: flex;
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            height: 100vh; /* Full height of the viewport */
+            margin: 0; /* Remove default margin */
+            background-color: #000000; /* Optional background color */
+        }
+        #container {
+            text-align: center; /* Center text inside the container */
+            color: white; /* Optional text color */
+        }
+        #frequencySettings {
+            background: #720505; /* Background color for frequency settings */
+            padding: 50px;
+            border-radius: 50px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        /* General slider styling */
+        input[type="range"] {
+            -webkit-appearance: none; /* Removes default styling for WebKit browsers */
+            width: 100%; /* Set the width to fill the parent container */
+            height: 15px; /* Increase the height of the slider */
+            border-radius: 10px; /* Round corners of the track */
+            background: #ddd; /* Change background color of the track */
+            outline: none; /* Remove default focus outline */
+            opacity: 0.8; /* Make the slider a bit transparent */
+            transition: opacity 0.2s; /* Smooth transition when hovered */
+        }
+
+        input[type="range"]:hover {
+            opacity: 1; /* Fully opaque on hover */
+        }
+
+        /* Customize the slider thumb (handle) */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; /* Removes default styling for WebKit browsers */
+            appearance: none;
+            width: 25px; /* Increase the width of the handle */
+            height: 25px; /* Increase the height of the handle */
+            border-radius: 50%; /* Make the handle circular */
+            background: #720505; /* Handle color */
+            cursor: pointer; /* Change cursor to pointer */
+            box-shadow: 0 0 2px rgba(0, 0, 0, 0.5); /* Add shadow to handle */
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #720505;
+            cursor: pointer;
+            box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+        }
+
+        input[type="range"]::-ms-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #720505;
+            cursor: pointer;
+            box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Styling the track of the slider for webkit browsers */
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 15px; /* Adjust height of the slider track */
+            border-radius: 10px; /* Make the track corners round */
+            background: #ddd; /* Track color */
+        }
+
+        /* Styling the track of the slider for Firefox */
+        input[type="range"]::-moz-range-track {
+            width: 100%;
+            height: 15px;
+            border-radius: 10px;
+            background: #ddd;
+        }
+
+        /* Styling the track of the slider for IE */
+        input[type="range"]::-ms-track {
+            width: 100%;
+            height: 15px;
+            border-radius: 10px;
+            background: #ddd;
+            border: none; /* Remove the border from the track */
+            color: transparent; /* Hide the default track */
+        }
+    </style>
+</head>
+<body>
+    <div id="appContainer">
+        <!-- Frequency Settings -->
+
+        <!-- Frequency Settings -->
+
+        <h1>Enter Subject Information</h1>
+        <form id="subjectForm">
+            <input type="text" id="studentId" name="studentId" placeholder="Student Id" required><br><br>
+            <input type="text" id="studentName" name="studentName" placeholder="Student Name" required><br><br>
+            <input type="number" id="studentAge" name="studentAge" placeholder="Student Age" required><br><br>
+        
+            <select id="studentGender" name="studentGender" required>
+                <option value="">Select Gender</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+                <option value="OTHER">Other</option>
+            </select><br><br>
+            <button type="submit">Submit</button>
+            <div id="notification"></div> <!-- Notification area -->
+        </form>
+        <div id="subjectResponse"></div>   
+        <div id="frequencySettings">
+            <h1>Set Frequencies</h1>
+            <label for="lowFrequency">Low Frequency (100-1500):</label>
+            <input type="range" id="lowFrequency" min="100" max="1500" value="100" step="50" />
+            <span id="lowFrequencyValue">100</span> Hz
+
+            <label for="highFrequency">High Frequency (2000-4000):</label>
+            <input type="range" id="highFrequency" min="2000" max="4000" value="2000" step="50" />
+            <span id="highFrequencyValue">2000</span> Hz
+        
+            <div id="intensitysettings">
+                <h1>Set Intensity Level</h1>
+                <label for="Intensitylevel">Intensity Level (0-1):</label>
+                <input type="range" id="Intensitylevel" min="0" max="0.5" value="0.0" step="0.001" />
+                <span id="intensityvalue">0</span> db
+            </div>
+
+        </div> 
+        <h1>Audio Recorder</h1>
+        <div class="button-container">
+            <button id="startBtn">Start Recording</button>
+            <button id="stopBtn" disabled>Stop Recording</button>
+            <button id="endBtn" disabled>End Recording</button>
+        </div>
+        <!-- <div id="messages"></div> -->
+
+        
+        <div id="notification"></div> <!-- Notification area -->
+
+        <div id="StreaminGMessageBox">
+            <h3>Instant Transcription</h3>
+            <div id="streamingmessage" class="messages"></div> <!-- For blue (instant transcription) messages -->
+        </div>
+
+        <!-- <div id="OldCorrectedmessageBox">
+            <h3>Old Message</h3>
+            <div id="oldcorrectedmessage" class="messages"></div> 
+        </div> -->
+        
+        <!-- <div id="FinalMessageBox">
+            <h3>Final Message</h3>
+            <div id="finalcorrectedmessage" class="messages"></div> 
+        </div> -->
+
+        <div id="NewCorrectedMessageBox">
+            <h3>Corrected Transcription</h3>
+            <div id="newcorrectedmessage" class="messages"></div> <!-- For green (corrected transcription) messages -->
+        </div>
+
+        
+
+
+        <div class="button-container" style="justify-content: center;">
+            <button id="sendTrueBtn" disabled>Create Context</button>
+        </div>
+        <div id="responseMessage"></div>
+        <h3> Overall Summary</h3>
+        <div id="outputBox" style="background-color: white; padding: 10px; border: 1px solid #ccc;"></div>
+        <h3> Subject Conversation</h3>
+        <div id="responseBox" style="background-color: white; padding: 10px; border: 1px solid #ccc;"></div>
+
+        <div id="chatBox">
+            <h1>Chat with Model</h1>
+            <div class="dropdown-container">
+                <select id="questionDropdown">
+                    <option value="">Select a question...</option>
+                    <option value="来访者的主观描述（本周来访者主诉变化情况、与咨询师约定的任务完成情况、自身工作/学业/生活情况及其它来访者主动报告的情况等）">来访者的主观描述</option>
+                    <option value="对来访者的客观描述（咨询师的观察、测试结果、医院就诊结果等）">对来访者的客观描述</option>
+                    <option value="咨询目标">咨询目标</option>
+                    <option value="咨询要点及处理（咨询师在咨询过程中采取的行动，主要咨询方法及技术、作业等）">咨询要点及处理</option>
+                    <option value="当前会谈的效果（来访者对咨询的反应等）">当前会谈的效果</option>
+                </select>
+                <input type="text" id="chatInput" placeholder="Type your message here" />
+            </div>
+            <button id="sendBtn" disabled>Send</button>
+            <div id="chatMessages"></div> <!-- Chat messages area -->
+        </div>
+        <div id="SaveInformation">
+            <h3> Save The Information </h3>
+            <button id="saveBtn" disabled>Save</button>
+        </div>
+        
+
+    </div>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:8000/audio/transcribe');
+        let mediaRecorder;
+        let audioChunks = [];
+        let recordingInterval;
+        let isRecording = false;
+        let silenceTimeout = null; // Timeout for silence detection
+        let recordingEnded = false;
+        let lastReceivedTime = Date.now(); // Timestamp of the last audio chunk received
+        let isSilenceDetected = false; // Flag to track if silence has been detected
+
+        // WebSocket event handlers for audio recording
+        ws.onopen = () => {
+            console.log('WebSocket connection opened');
+        };
+
+        let streamingmessageDiv = document.getElementById('streamingmessage'); // Cache the streamingmessage div
+        let oldcorrectedmessageDiv = document.getElementById('oldcorrectedmessage'); // Cache the oldcorrectedmessageDiv div
+        let newcorrectedmessageDiv = document.getElementById('newcorrectedmessage');
+        let oldMessageCounter = 16; // Counter for old messages
+        let newMessageCounter = 16; // Counter for new messages
+        let finalmessage = 1;
+        let messageDiv = document.getElementById('finalcorrectedmessage');
+
+        ws.onmessage = function(event) {
+            console.log('Received message:', event.data);
+            
+            const receivedMessage = JSON.parse(event.data); // Parse the JSON message
+            
+            if (receivedMessage.source === "final_Transcription") {
+                // Clear the container before appending the new message
+                newcorrectedmessageDiv.innerHTML = '';  // This will clear out the previous message
+
+                // Create a new label for "New Message:"
+                const label = document.createElement('div');
+                label.style.color = 'black'; // Black color for the label
+                label.innerHTML = `New Message ${finalmessage}:`; // Add "New Message:" with counter
+                newcorrectedmessageDiv.appendChild(label);
+                
+                // Create a container for the messages to display them in one line
+                const messageContainer = document.createElement('div'); // New div to hold the messages
+                messageContainer.style.display = 'inline'; // Display inline for one line
+                messageContainer.style.color = 'purple'; // Color for corrected messages
+
+                // Assuming receivedMessage.content is a list of strings
+                receivedMessage.content.forEach((text, index) => {
+                    // Add a space between messages
+                    messageContainer.innerHTML += text + (index < receivedMessage.content.length - 1 ? ' ' : '');
+                });
+
+                newcorrectedmessageDiv.appendChild(messageContainer);
+            }
+
+            if (receivedMessage.source === "instant_transcription") {
+                // Loop through each string in the list of messages
+                receivedMessage.content.forEach(message => {
+                    // Create a new blue message element
+                    const blueMessage = document.createElement('span');
+                    blueMessage.style.color = 'blue'; // Color for instant messages
+                    blueMessage.innerHTML = message + ' '; // Add space after each message
+                    streamingmessageDiv.appendChild(blueMessage); // Append the new blue message
+                });
+            }
+            else if (receivedMessage.source === "final_Transcription") {
+                // Create a new label for "Old Message:"
+                const label = document.createElement('div');
+                label.style.color = 'black'; // Black color for the label
+                label.innerHTML = `Final Message ${finalmessage++}:`; // Add "New Message:" with counter
+                messageDiv.appendChild(label);
+                
+                // Create a container for the messages to display them in one line
+                const messageContainer = document.createElement('div'); // New div to hold the messages
+                messageContainer.style.display = 'inline'; // Display inline for one line
+                messageContainer.style.color = 'orange'; // Color for corrected messages
+
+                // Assuming receivedMessage.content is a list of strings
+                receivedMessage.content.forEach((text, index) => {
+                    // Add a space between messages
+                    messageContainer.innerHTML += text + (index < receivedMessage.content.length - 1 ? ' ' : '');
+                });
+
+                // Append the message container after the label
+                messageDiv.appendChild(messageContainer);
+            }
+
+            // Scroll both message boxes to the bottom after new messages
+            streamingmessageDiv.scrollTop = streamingmessageDiv.scrollHeight;
+            oldcorrectedmessageDiv.scrollTop = oldcorrectedmessageDiv.scrollHeight;
+            newcorrectedmessageDiv.scrollTop = newcorrectedmessageDiv.scrollHeight;
+        }
+
+        ws.onerror = function(error) {
+            console.log('WebSocket Error: ', error);
+        };
+
+        ws.onclose = function() {
+            console.log('WebSocket connection closed');
+            document.getElementById('notification').innerText = 'WebSocket connection closed.';
+        };
+
+
+        // Form submission for subject information
+        // Form submission for subject information
+        document.getElementById('subjectForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const studentId = document.getElementById('studentId').value;
+            const studentName = document.getElementById('studentName').value;
+            const studentAge = document.getElementById('studentAge').value;
+            const studentGender = document.getElementById('studentGender').value;
+
+            const subjectData = {
+                subject_id: studentId,
+                subject_name: studentName,
+                subject_age: studentAge,
+                subject_gender: studentGender,
+            };
+
+            // Send data to the server
+            fetch('/subject-information', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(subjectData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('subjectResponse').innerHTML = `Submitted: ${studentId}, ${studentName}, ${studentAge}, ${studentGender}`;
+                document.getElementById('notification').innerText = 'Information Saved'; // Notify successful save
+                document.getElementById('saveBtn').disabled = false; // Enable save button
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('notification').innerText = 'Error Saving Information'; // Notify error
+            });
+        });
+
+        const lowFrequencySlider = document.getElementById('lowFrequency');
+        const highFrequencySlider = document.getElementById('highFrequency');
+        const lowFrequencyValue = document.getElementById('lowFrequencyValue');
+        const highFrequencyValue = document.getElementById('highFrequencyValue');
+        const intensityslider = document.getElementById('Intensitylevel')
+        const intensityvalue = document.getElementById('intensityvalue')
+
+        // Update displayed frequency values
+        lowFrequencySlider.addEventListener('input', () => {
+            lowFrequencyValue.textContent = lowFrequencySlider.value;
+        });
+
+        highFrequencySlider.addEventListener('input', () => {
+            highFrequencyValue.textContent = highFrequencySlider.value;
+        });
+
+        intensityslider.addEventListener('input', () => {
+            intensityvalue.textContent = intensityslider.value;
+        });
+
+        // Initialize frequency values
+        lowFrequencyValue.textContent = lowFrequencySlider.value;
+        highFrequencyValue.textContent = highFrequencySlider.value;
+        intensityvalue.textContent = intensityslider.value
+
+        // Start recording
+        document.getElementById('startBtn').addEventListener('click', async () => {
+            if (recordingEnded) return; // Prevent starting if recording has ended
+            try {
+                const lowFreq = parseInt(lowFrequencySlider.value);
+                const highFreq = parseInt(highFrequencySlider.value);
+                const intensity = parseFloat(intensityslider.value)
+                
+                // You can send these values to the backend if needed
+                const intensityData = {
+                    intensity_value: intensity
+                }
+                const frequencyData = {
+                    low_frequency: lowFreq,
+                    high_frequency: highFreq,
+                };
+
+                // Send frequency values to backend
+                await fetch('/audio-setting/frequency', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(frequencyData),
+                });
+
+                await fetch('/audio-setting/intensity', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(intensityData),
+                });
+
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.start();
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                    audioChunks = []; // Reset for next recording
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        ws.send(reader.result); // Send audio data to WebSocket
+                    };
+                    reader.readAsArrayBuffer(audioBlob);
+                };
+
+                isRecording = true;
+                recordingInterval = setInterval(() => {
+                    if (isRecording) {
+                        mediaRecorder.stop();
+                        mediaRecorder.start();
+                    }
+                }, 2000); // Stop and start every 1.5 seconds
+
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+                document.getElementById('endBtn').disabled = false;
+                document.getElementById('notification').innerText = 'Recording started'; // Notify recording started
+                document.getElementById('sendBtn').disabled = true; // Disable chat button
+                document.getElementById('sendTrueBtn').disabled = true; // Enable the sendTrueBtn
+                document.getElementById('sendTrueBtn').disabled = true; // Enable the sendTrueBtn
+            } catch (error) {
+                console.error('Error accessing audio devices:', error);
+            }
+        });
+
+        // Stop recording
+        document.getElementById('stopBtn').addEventListener('click', () => {
+            if (mediaRecorder) {
+                clearInterval(recordingInterval); // Stop the interval
+                mediaRecorder.stop(); // Ensure the current recording is stopped
+                isRecording = false;
+                document.getElementById('notification').innerText = 'Recording stopped. To continue, press Start again.';
+                document.getElementById('sendBtn').disabled = true; // Disable chat button
+            }
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+        });
+
+        // End recording
+        document.getElementById('endBtn').addEventListener('click', () => {
+            if (mediaRecorder) {
+                clearInterval(recordingInterval); // Stop the interval
+                mediaRecorder.stop(); // Ensure the current recording is stopped
+                isRecording = false;
+                recordingEnded = true; // Mark recording as ended
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = true;
+                document.getElementById('endBtn').disabled = true;
+                ws.close(); // Close WebSocket connection here
+                document.getElementById('sendTrueBtn').disabled = false; // Enable the sendTrueBtn
+                document.getElementById('notification').innerText = 'Recording ended. Waiting for Context to Process.';
+            }
+        });
+
+        document.getElementById('sendTrueBtn').addEventListener('click', async () => {
+            const response = await fetch('/audio/create-context', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ audio_url: 'https://112.124.48.213:443/file/audio/124d5a90-081c-b7dd-9e47-778f0b1a091f.wav' }), // Sending True 
+            });
+
+            if (response.ok) {
+                const result = await response.json(); // Capture the result
+                // document.getElementById('oldcorrectedmessage').innerText = result.response_text; // Corrected line
+                document.getElementById('outputBox').innerText = result.Summarized_message; // Display response
+                document.getElementById('responseBox').innerText = result.response_text.join('\n');
+
+                document.getElementById('outputBox').style.color = 'orange'; // Orange for outputBox
+                document.getElementById('responseBox').style.color = 'blue'; // Blue for responseBox
+                
+                document.getElementById('notification').innerText = 'Context Ready. Now you can Chat!!';
+                document.getElementById('sendBtn').disabled = false; // Enable chat button
+            } else {
+                const errorText = await response.text(); // Capture error text for more details
+                document.getElementById('responseMessage').innerText = `Error: ${errorText}`;
+            }
+        });
+
+        // document.getElementById('sendTrueBtn').addEventListener('click', async () => {
+        //     const response = await fetch('/create-context', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //         },
+        //         body: JSON.stringify({ command: true }), // Sending True 
+        //     });
+
+        //     if (response.ok) {
+        //         //const result = await response.json(); // If you want to capture the result
+        //         //console.log(result); // Do something with the result if needed
+        //         document.getElementById('notification').innerText = 'Context Ready. Now you can Chat!!';
+        //         document.getElementById('sendBtn').disabled = false; // Enable chat button
+        //     } else {
+        //         document.getElementById('responseMessage').innerText = 'Error sending command.';
+        //     }
+        // });
+
+        // Handle dropdown change
+        document.getElementById('questionDropdown').addEventListener('change', (event) => {
+            const selectedQuestion = event.target.value;
+            if (selectedQuestion) {
+                document.getElementById('chatInput').value = selectedQuestion;
+            }
+        });
+
+        // Chat functionality
+        document.getElementById('sendBtn').addEventListener('click', async () => {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            const dropdown = document.getElementById('questionDropdown');
+            const selectedContext = dropdown.value;
+
+            if (message && selectedContext) {
+                input.value = ''; // Clear input field
+
+                // Display the user's message
+                const chatDiv = document.getElementById('chatMessages');
+                chatDiv.innerHTML += `<div><strong>You:</strong> ${message}</div>`;
+                chatDiv.scrollTop = chatDiv.scrollHeight; // Scroll to the bottom
+
+                // Define fixed context
+                const context = `这是与学生进行的心理咨询记录。咨询过程中，来访者报告了他们的情况，咨询师提供了支持和指导。`;
+
+                // Define the prompt (user's message)
+                const prompt = message;
+
+                // Build the session-specific prompt with placeholders for context and input
+                const session_specific_prompt = `
+                    你是一位刚刚结束了与学生咨询的心理医生。以下是关于这次咨询的详细信息：<Context>\n
+                    {context}\n<Context>\n根据这次咨询的信息，请用第一人称的口吻直接回答以下问题。只回答问题的内容，不要添加额外的建议或背景信息。
+                    请尽量直接回答，不使用标题或分段格式，确保回答与问题直接相关。\n问题：{input}\n
+                `;
+
+                // Format the prompt by replacing placeholders with the actual context and query
+                const formatted_prompt = session_specific_prompt
+                    .replace("{context}", context)
+                    .replace("{input}", prompt);
+
+                // Create the request body (send formatted prompt along with the query)
+                const requestBody = {
+                    prompt: formatted_prompt,  // Send formatted prompt directly
+                    context: context,                          // Send context
+                    query: selectedContext                     // Send query (selected question)
+                };
+
+                // Send the chat message to the server
+                const response = await fetch('/chatbot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+                // Display the model's response
+                chatDiv.innerHTML += `<div><strong>Model:</strong> ${data.response}</div>`;
+                chatDiv.scrollTop = chatDiv.scrollHeight; // Scroll to the bottom
+            }
+        });
+
+
+        document.getElementById('saveBtn').addEventListener('click', async () => {
+            const studentId = document.getElementById('studentId').value;
+            const studentName = document.getElementById('studentName').value;
+            const studentAge = document.getElementById('studentAge').value;
+            const studentGender = document.getElementById('studentGender').value;
+            
+            const saveData = {
+                studentId: studentId,
+                studentName: studentName,
+                studentAge: studentAge,
+                studentGender: studentGender
+            };
+
+            // Send the save data to the backend
+            const response = await fetch('/save_session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(saveData)
+            });
+
+            const result = await response.json();
+            document.getElementById('notification').innerText = result.status; // Display the status message
+        });
+
+
+
+        
+    </script>
+</body>
+</html>

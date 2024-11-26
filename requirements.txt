@@ -1,0 +1,16 @@
+fastapi==0.114.1
+funasr>=1.1.2
+huggingface-hub==0.23.0
+langchain== 0.1.20
+librosa==0.10.2.post1
+modelscope==1.18.0
+numpy<=1.26.4
+pymongo==4.9.1
+torch>=1.13
+torchaudio==2.4.1
+uvicorn==0.30.6
+websockets==13.1
+PyJWT == 2.8.0
+soundfile == 0.12.1
+sounddevice == 0.5.0
+scipy == 1.13.0
